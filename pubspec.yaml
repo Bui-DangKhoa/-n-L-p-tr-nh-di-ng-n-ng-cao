@@ -1,0 +1,40 @@
+name: do_an_ltddnc
+description: "A new Flutter project."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase core (bắt buộc)
+  firebase_core: ^2.24.2
+  # Firebase Authentication
+  firebase_auth: ^4.17.9
+  # Cloud Firestore
+  cloud_firestore: ^4.17.5
+  # Firebase Storage (dùng cho upload ảnh sản phẩm)
+  firebase_storage: ^11.6.10
+
+  # ✅ THÊM PROVIDER VÀO ĐÂY
+  provider: ^6.1.2
+
+  # ✅ THÊM SHARED PREFERENCES CHO LOCAL STORAGE
+  shared_preferences: ^2.2.2
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  # Nếu có ảnh/logo thì thêm vào đây
+  # assets:
+  #   - assets/images/

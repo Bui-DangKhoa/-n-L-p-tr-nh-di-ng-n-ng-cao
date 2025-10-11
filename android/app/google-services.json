@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "38596047061",
+    "project_id": "di-dong-nang-cao",
+    "storage_bucket": "di-dong-nang-cao.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38596047061:android:e5a9a2d938b016a263b25c",
+        "android_client_info": {
+          "package_name": "com.example.do_an_ltddnc"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjndW6sYbbHZKDOnYLsF8M5uOV_BdZ4HA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38596047061:android:2efd890902a0266c63b25c",
+        "android_client_info": {
+          "package_name": "com.example.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjndW6sYbbHZKDOnYLsF8M5uOV_BdZ4HA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
