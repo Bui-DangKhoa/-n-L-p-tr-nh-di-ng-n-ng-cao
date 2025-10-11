@@ -1,4 +1,4 @@
-# Flutter Shopping App
+# Flutter Shopping App - Đồ Án Lập Trình Di Động Nâng Cao
 
 Ứng dụng mua sắm trực tuyến được phát triển bằng Flutter với Firebase.
 
@@ -51,8 +51,8 @@
 1. Clone repository:
 
 ```bash
-git clone <repository-url>
-cd do_an_ltddnc
+git clone https://github.com/Bui-DangKhoa/-n-L-p-tr-nh-di-ng-n-ng-cao.git
+cd -n-L-p-tr-nh-di-ng-n-ng-cao
 ```
 
 2. Cài đặt dependencies:
