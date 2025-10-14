@@ -118,8 +118,9 @@ class FirestoreService {
 
       final Map<String, dynamic> updateData = {};
 
-      if (displayName != null) updateData['displayName'] = displayName;
-      if (phoneNumber != null) updateData['phoneNumber'] = phoneNumber;
+      // Map to correct field names used in UserModel
+      if (displayName != null) updateData['name'] = displayName;
+      if (phoneNumber != null) updateData['phone'] = phoneNumber;
       if (address != null) updateData['address'] = address;
 
       updateData['updatedAt'] = FieldValue.serverTimestamp();

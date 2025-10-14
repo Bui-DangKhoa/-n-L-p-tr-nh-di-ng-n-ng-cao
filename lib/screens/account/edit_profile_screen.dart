@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user_model.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -55,48 +53,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final currentUser = authProvider.user;
 
-      if (currentUser == null) {
-        throw Exception('Không tìm thấy thông tin người dùng');
-      }
-
-      // Cập nhật thông tin trong Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.id)
-          .update({
-            'name': _nameController.text.trim(),
-            'phone': _phoneController.text.trim(),
-            'address': _addressController.text.trim(),
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-
-      // Cập nhật UserModel trong AuthProvider
-      final updatedUser = UserModel(
-        id: currentUser.id,
-        email: currentUser.email,
-        name: _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
+      // Sử dụng method updateUserInfo từ AuthProvider
+      final success = await authProvider.updateUserInfo(
+        displayName: _nameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
         address: _addressController.text.trim(),
-        role: currentUser.role,
-        createdAt: currentUser.createdAt,
       );
-
-      authProvider.updateUserModel(updatedUser);
 
       if (!mounted) return;
 
-      // Hiển thị thông báo thành công
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Cập nhật thông tin thành công!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      if (success) {
+        // Hiển thị thông báo thành công
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Cập nhật thông tin thành công!'),
+            backgroundColor: Colors.green,
+          ),
+        );
 
-      // Quay lại màn hình trước
-      Navigator.pop(context);
+        // Quay lại màn hình trước
+        Navigator.pop(context);
+      } else {
+        // Hiển thị thông báo lỗi
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ Cập nhật thông tin thất bại!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
