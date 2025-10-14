@@ -139,10 +139,11 @@ class FirestoreService {
 
       updateData['updatedAt'] = FieldValue.serverTimestamp();
 
+      // Sử dụng set với merge thay vì update để tránh lỗi document không tồn tại
       await _firestore
           .collection('users')
           .doc(uid)
-          .update(updateData)
+          .set(updateData, SetOptions(merge: true))
           .timeout(_timeout);
 
       print('✅ [Firestore] User info updated successfully');

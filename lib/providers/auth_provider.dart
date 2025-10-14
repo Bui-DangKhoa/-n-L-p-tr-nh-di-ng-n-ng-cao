@@ -158,8 +158,10 @@ class AuthProvider with ChangeNotifier {
           address: address ?? _userModel!.address,
         );
         print("✅ Cập nhật thông tin thành công!");
+        _errorMessage = null; // Clear any previous error
       } else {
-        _errorMessage = "Không thể cập nhật thông tin";
+        _errorMessage =
+            "Không thể cập nhật thông tin - vui lòng kiểm tra kết nối mạng";
         print("❌ Cập nhật thông tin thất bại");
       }
 

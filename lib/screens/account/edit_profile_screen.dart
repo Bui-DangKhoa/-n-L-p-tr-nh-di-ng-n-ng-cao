@@ -54,6 +54,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
+      // Debug info
+      print('🔍 Updating profile:');
+      print('  - Name: ${_nameController.text.trim()}');
+      print('  - Phone: ${_phoneController.text.trim()}');
+      print('  - Address: ${_addressController.text.trim()}');
+      print('  - Current user: ${authProvider.user?.email}');
+
       // Sử dụng method updateUserInfo từ AuthProvider
       final success = await authProvider.updateUserInfo(
         displayName: _nameController.text.trim(),
@@ -75,11 +82,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         // Quay lại màn hình trước
         Navigator.pop(context);
       } else {
-        // Hiển thị thông báo lỗi
+        // Lấy lỗi cụ thể từ AuthProvider
+        final errorMessage =
+            authProvider.errorMessage ?? 'Cập nhật thông tin thất bại';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Cập nhật thông tin thất bại!'),
+          SnackBar(
+            content: Text('❌ $errorMessage'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
