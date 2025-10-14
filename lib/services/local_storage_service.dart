@@ -49,6 +49,11 @@ class LocalStorageService {
     }
   }
 
+  // Alias cho removeUser (để consistency với API)
+  static Future<bool> clearUser() async {
+    return await removeUser();
+  }
+
   // Lưu giỏ hàng vào local storage
   static Future<bool> saveCart(Map<String, dynamic> cartData) async {
     try {

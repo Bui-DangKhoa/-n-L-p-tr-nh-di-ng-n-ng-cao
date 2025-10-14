@@ -206,4 +206,65 @@ class AuthService {
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  // Method để xóa tài khoản
+  Future<String?> deleteAccount(String password) async {
+    try {
+      final user = currentUser;
+      if (user == null) {
+        return 'Không có user đăng nhập';
+      }
+
+      print("🗑️ Bắt đầu xóa tài khoản: ${user.email}");
+
+      // Reauthenticate user trước khi xóa (Firebase yêu cầu)
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: password,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+      print("✅ Reauthentication thành công");
+
+      // Xóa user document từ Firestore trước
+      try {
+        await _firestore.collection('users').doc(user.uid).delete();
+        print("✅ Đã xóa user document từ Firestore");
+      } catch (e) {
+        print("⚠️ Lỗi khi xóa user document: $e");
+        // Tiếp tục xóa auth account dù xóa Firestore thất bại
+      }
+
+      // Xóa user từ Firebase Auth
+      await user.delete();
+      print("✅ Đã xóa user từ Firebase Auth");
+
+      // Xóa dữ liệu local
+      try {
+        await LocalStorageService.clearUser();
+        print("✅ Đã xóa dữ liệu local");
+      } catch (e) {
+        print("⚠️ Lỗi khi xóa dữ liệu local: $e");
+      }
+
+      return null; // Success
+    } on FirebaseAuthException catch (e) {
+      print('🚨 Firebase Auth Error (Delete Account): ${e.code}');
+      switch (e.code) {
+        case 'wrong-password':
+          return 'Mật khẩu không đúng';
+        case 'too-many-requests':
+          return 'Quá nhiều yêu cầu. Vui lòng thử lại sau.';
+        case 'requires-recent-login':
+          return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+        case 'network-request-failed':
+          return 'Lỗi mạng. Vui lòng kiểm tra kết nối internet.';
+        default:
+          return e.message ?? 'Xóa tài khoản thất bại.';
+      }
+    } catch (e) {
+      print('🚨 General Error (Delete Account): $e');
+      return 'Lỗi không xác định. Vui lòng thử lại.';
+    }
+  }
 }

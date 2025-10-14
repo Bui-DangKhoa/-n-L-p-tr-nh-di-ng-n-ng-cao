@@ -184,4 +184,39 @@ class AuthProvider with ChangeNotifier {
       print("⚠️ Lỗi khi refresh user data: $e");
     }
   }
+
+  // Method để xóa tài khoản
+  Future<void> deleteAccount(String password) async {
+    if (_userModel == null) {
+      throw Exception("Không có user đăng nhập");
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      print("🗑️ Bắt đầu xóa tài khoản cho: ${_userModel!.email}");
+
+      // Xóa tài khoản từ Firebase Auth và Firestore
+      final error = await _authService.deleteAccount(password);
+
+      if (error != null) {
+        throw Exception(error);
+      }
+
+      // Xóa thành công - clear local data
+      _userModel = null;
+      _isLoading = false;
+      notifyListeners();
+
+      print("✅ Xóa tài khoản thành công!");
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Lỗi xóa tài khoản: ${e.toString()}';
+      print("🚨 AuthProvider deleteAccount error: $e");
+      notifyListeners();
+      rethrow; // Re-throw để UI có thể catch và hiển thị lỗi
+    }
+  }
 }

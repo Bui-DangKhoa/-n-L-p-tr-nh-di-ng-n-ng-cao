@@ -277,6 +277,15 @@ class AccountScreen extends StatelessWidget {
                   );
                 },
               ),
+              _buildActionTile(
+                icon: Icons.delete_forever,
+                title: "Xóa tài khoản",
+                subtitle: "Xóa vĩnh viễn tài khoản của bạn",
+                color: Colors.red[800]!,
+                onTap: () {
+                  _showDeleteAccountDialog(context, authProvider);
+                },
+              ),
             ],
           ),
 
@@ -426,6 +435,150 @@ class AccountScreen extends StatelessWidget {
               child: const Text("Đăng xuất"),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showDeleteAccountDialog(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) {
+    final TextEditingController passwordController = TextEditingController();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.warning, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text("Xóa tài khoản"),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "⚠️ CẢNH BÁO: Hành động này không thể hoàn tác!",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    "Việc xóa tài khoản sẽ:\n"
+                    "• Xóa vĩnh viễn tất cả dữ liệu cá nhân\n"
+                    "• Xóa lịch sử mua hàng\n"
+                    "• Không thể khôi phục sau này",
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Nhập mật khẩu để xác nhận:",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      hintText: "Nhập mật khẩu hiện tại",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                    enabled: !isLoading,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  child: const Text("Hủy"),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (passwordController.text.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Vui lòng nhập mật khẩu"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() {
+                            isLoading = true;
+                          });
+
+                          try {
+                            await authProvider.deleteAccount(
+                              passwordController.text.trim(),
+                            );
+
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop(); // Close dialog
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Tài khoản đã được xóa thành công",
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+
+                            // Navigate to login screen and clear navigation stack
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              '/login',
+                              (route) => false,
+                            );
+                          } catch (e) {
+                            setState(() {
+                              isLoading = false;
+                            });
+
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text("Lỗi: ${e.toString()}"),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      : const Text("XÓA TÀI KHOẢN"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
