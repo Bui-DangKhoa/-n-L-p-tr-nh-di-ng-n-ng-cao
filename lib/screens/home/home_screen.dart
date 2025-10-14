@@ -204,13 +204,13 @@ class HomeScreen extends StatelessWidget {
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio:
+                          0.8, // Adjusted for better proportion with new image ratio
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                    ),
                     itemCount: 4,
                     itemBuilder: (context, index) {
                       return _buildProductCard(context, index, cartProvider);
@@ -358,7 +358,9 @@ class HomeScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          // Product Image with fixed aspect ratio
+          AspectRatio(
+            aspectRatio: 1.2, // Width : Height ratio for better proportion
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -374,7 +376,6 @@ class HomeScreen extends StatelessWidget {
                 child: Image.network(
                   product["image"]!,
                   width: double.infinity,
-                  height: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
@@ -390,7 +391,9 @@ class HomeScreen extends StatelessWidget {
                     if (loadingProgress == null) return child;
                     return Container(
                       color: Colors.grey[100],
-                      child: const Center(child: CircularProgressIndicator()),
+                      child: const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
                     );
                   },
                 ),
