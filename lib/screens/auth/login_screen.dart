@@ -246,6 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   // Register Button
+                  // Register link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -271,6 +272,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ],
+                  ),
+
+                  // Debug button (tạm thời)
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/firebase-debug');
+                    },
+                    child: const Text(
+                      "🔧 Debug Firebase",
+                      style: TextStyle(color: Colors.red, fontSize: 14),
+                    ),
                   ),
                 ],
               ),

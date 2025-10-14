@@ -11,8 +11,22 @@ class FirestoreService {
   /// Kiểm tra kết nối Firestore
   static Future<bool> checkConnection() async {
     try {
-      await _firestore.enableNetwork().timeout(_timeout);
+      // Thử một operation đơn giản
+      await _firestore
+          .collection('_health_check')
+          .limit(1)
+          .get()
+          .timeout(_timeout);
       return true;
+    } on FirebaseException catch (e) {
+      print('🚨 Firestore Firebase error: ${e.code} - ${e.message}');
+      // Log chi tiết cho các lỗi phổ biến
+      if (e.code == 'permission-denied') {
+        print('❌ Permission denied - check Firestore rules');
+      } else if (e.code == 'unavailable') {
+        print('❌ Firestore unavailable - network issue');
+      }
+      return false;
     } catch (e) {
       print('🚨 Firestore connection error: $e');
       return false;

@@ -13,6 +13,7 @@ import 'screens/search/search_screen.dart'; // ✅ Thêm import search screen
 import 'screens/account/account_screen.dart'; // ✅ Thêm import account screen
 import 'screens/account/edit_profile_screen.dart'; // ✅ Thêm import edit profile screen
 import 'screens/account/change_password_screen.dart'; // ✅ Thêm import change password screen
+import 'screens/debug/firebase_debug_screen.dart'; // ✅ Thêm import debug screen
 // import 'services/firestore_service.dart'; // ❌ Tạm thời tắt
 
 void main() async {
@@ -66,6 +67,8 @@ class MyApp extends StatelessWidget {
             const EditProfileScreen(), // ✅ Thêm edit profile route
         '/change-password': (context) =>
             const ChangePasswordScreen(), // ✅ Thêm change password route
+        '/firebase-debug': (context) =>
+            const FirebaseDebugScreen(), // ✅ Thêm debug route
       },
     );
   }
