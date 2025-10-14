@@ -154,18 +154,4 @@ class FirestoreService {
       print('⚠️ [Firestore] Error configuring web settings: $e');
     }
   }
-
-  /// Test connection cơ bản
-  static Future<void> testConnection() async {
-    try {
-      print('🔍 [Firestore] Testing basic connection...');
-
-      // Test với một collection đơn giản
-      await _firestore.collection('_test').limit(1).get().timeout(_timeout);
-
-      print('✅ [Firestore] Connection test successful');
-    } catch (e) {
-      print('🚨 [Firestore] Connection test failed: $e');
-    }
-  }
 }

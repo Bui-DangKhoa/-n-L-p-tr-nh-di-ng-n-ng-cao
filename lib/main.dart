@@ -17,13 +17,7 @@ import 'screens/account/change_password_screen.dart'; // ✅ Thêm import change
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // ✅ Thêm options
-  );
-
-  // ❌ Tạm thời tắt Firestore initialization để test
-  // FirestoreService.initializeForWeb();
-  // await FirestoreService.testConnection();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     MultiProvider(

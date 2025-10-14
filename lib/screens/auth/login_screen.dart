@@ -226,49 +226,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Test Button để bypass Firebase (tạm thời)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Bypass Firebase và đi thẳng vào home
-                        Navigator.pushReplacementNamed(context, "/home");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        "🚀 TEST - Vào Home (Bypass Firebase)",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Test Screen Button
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushReplacementNamed(context, "/test");
-                    },
-                    child: const Text(
-                      "🔧 Mở Test Firebase Screen",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
                   // Divider
                   Row(
                     children: [
