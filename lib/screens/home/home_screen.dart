@@ -20,6 +20,29 @@ class HomeScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Admin Menu (only for admin users)
+          if (authProvider.user?.role == 'admin')
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.admin_panel_settings),
+              onSelected: (value) {
+                if (value == 'manage_products') {
+                  Navigator.pushNamed(context, '/admin/products');
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'manage_products',
+                  child: Row(
+                    children: [
+                      Icon(Icons.inventory, color: Colors.blue),
+                      SizedBox(width: 8),
+                      Text('Quản lý sản phẩm'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          // Cart Icon
           Stack(
             children: [
               IconButton(

@@ -7,8 +7,9 @@ class ProductService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  CollectionReference<ProductModel> get _productsRef =>
-      _firestore.collection('products').withConverter<ProductModel>(
+  CollectionReference<ProductModel> get _productsRef => _firestore
+      .collection('products')
+      .withConverter<ProductModel>(
         fromFirestore: (snapshot, _) => ProductModel.fromMap(snapshot.data()!),
         toFirestore: (product, _) => product.toMap(),
       );
@@ -22,7 +23,7 @@ class ProductService {
     }
 
     return query.snapshots().map(
-          (snapshot) => snapshot.docs.map((doc) {
+      (snapshot) => snapshot.docs.map((doc) {
         final product = doc.data();
         product.id = doc.id; // gán id Firestore
         return product;
@@ -36,7 +37,8 @@ class ProductService {
     for (File image in images) {
       try {
         final ref = _storage.ref().child(
-            'products/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}');
+          'products/${DateTime.now().millisecondsSinceEpoch}_${image.path.split('/').last}',
+        );
         await ref.putFile(image);
         final url = await ref.getDownloadURL();
         imageUrls.add(url);
@@ -88,6 +90,88 @@ class ProductService {
     } catch (e) {
       print("❌ Lỗi lấy sản phẩm: $e");
       return null;
+    }
+  }
+
+  // === ADMIN MANAGEMENT METHODS ===
+
+  /// Get all products as Map for admin management
+  Future<List<Map<String, dynamic>>> getAllProducts() async {
+    try {
+      print('📦 Loading all products from Firestore...');
+      final querySnapshot = await _firestore
+          .collection('products')
+          .orderBy('name')
+          .get();
+
+      final products = querySnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+
+      print('✅ Loaded ${products.length} products');
+      return products;
+    } catch (e) {
+      print('❌ Error loading products: $e');
+      rethrow;
+    }
+  }
+
+  /// Add new product from Map data
+  Future<String> addProductFromMap(Map<String, dynamic> productData) async {
+    try {
+      print('📦 Adding new product: ${productData['name']}');
+
+      // Add timestamp and default values
+      productData['createdAt'] = FieldValue.serverTimestamp();
+      productData['updatedAt'] = FieldValue.serverTimestamp();
+      productData['isActive'] = true;
+
+      final docRef = await _firestore.collection('products').add(productData);
+
+      print('✅ Product added with ID: ${docRef.id}');
+      return docRef.id;
+    } catch (e) {
+      print('❌ Error adding product: $e');
+      rethrow;
+    }
+  }
+
+  /// Update existing product from Map data
+  Future<void> updateProductFromMap(
+    String productId,
+    Map<String, dynamic> productData,
+  ) async {
+    try {
+      print('📦 Updating product: $productId');
+
+      // Add timestamp
+      productData['updatedAt'] = FieldValue.serverTimestamp();
+
+      await _firestore
+          .collection('products')
+          .doc(productId)
+          .update(productData);
+
+      print('✅ Product updated successfully');
+    } catch (e) {
+      print('❌ Error updating product: $e');
+      rethrow;
+    }
+  }
+
+  /// Delete product (hard delete for admin)
+  Future<void> deleteProductHard(String productId) async {
+    try {
+      print('📦 Deleting product: $productId');
+
+      await _firestore.collection('products').doc(productId).delete();
+
+      print('✅ Product deleted successfully');
+    } catch (e) {
+      print('❌ Error deleting product: $e');
+      rethrow;
     }
   }
 }
