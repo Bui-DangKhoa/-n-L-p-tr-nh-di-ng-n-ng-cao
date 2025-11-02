@@ -16,6 +16,7 @@ import 'screens/account/change_password_screen.dart'; // ✅ Thêm import change
 import 'screens/debug/firebase_debug_screen.dart'; // ✅ Thêm import debug screen
 import 'screens/debug/admin_setup_screen.dart'; // ✅ Thêm import admin setup screen
 import 'screens/debug/quick_admin_fix.dart'; // ✅ Thêm import quick admin fix
+import 'screens/debug/seed_data_screen.dart'; // ✅ Thêm import seed data screen
 import 'screens/admin/product_management_screen.dart'; // ✅ Thêm import admin screens
 import 'screens/admin/add_edit_product_screen.dart'; // ✅ Thêm import add/edit product screen
 // import 'services/firestore_service.dart'; // ❌ Tạm thời tắt
@@ -77,6 +78,8 @@ class MyApp extends StatelessWidget {
             const AdminSetupScreen(), // ✅ Thêm admin setup route
         '/quick-admin-fix': (context) =>
             const QuickAdminFix(), // ✅ Thêm quick admin fix route
+        '/seed-data': (context) =>
+            const SeedDataScreen(), // ✅ Thêm seed data route
         '/admin/products': (context) =>
             const ProductManagementScreen(), // ✅ Thêm admin product management route
         '/admin/add-product': (context) =>

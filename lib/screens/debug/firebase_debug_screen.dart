@@ -104,6 +104,21 @@ class _FirebaseDebugScreenState extends State<FirebaseDebugScreen> {
                     ),
             ),
             const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/seed-data');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                '🗄️ Thêm dữ liệu mẫu (Seed Data)',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 16),
             OutlinedButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Quay lại'),

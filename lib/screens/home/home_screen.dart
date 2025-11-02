@@ -3,10 +3,41 @@ import 'package:provider/provider.dart'; // ✅ Import từ package provider (kh
 import '../../providers/auth_provider.dart'; // ✅ Import file auth_provider của bạn
 import '../../providers/cart_provider.dart'; // ✅ Import cart provider
 import '../../models/cart_item_model.dart'; // ✅ Import cart item model
+import '../../services/product_service.dart'; // ✅ Import product service
 import '../product/product_detail_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final ProductService _productService = ProductService();
+  List<Map<String, dynamic>> _products = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final products = await _productService.getAllProducts();
+      setState(() {
+        _products = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading products: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,21 +255,34 @@ class HomeScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio:
-                          0.8, // Adjusted for better proportion with new image ratio
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                    ),
-                    itemCount: 4,
-                    itemBuilder: (context, index) {
-                      return _buildProductCard(context, index, cartProvider);
-                    },
-                  ),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _products.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Chưa có sản phẩm nào',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        )
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.8,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                          itemCount: _products.length,
+                          itemBuilder: (context, index) {
+                            return _buildProductCard(
+                              context,
+                              index,
+                              cartProvider,
+                            );
+                          },
+                        ),
                 ],
               ),
             ),
@@ -372,8 +416,7 @@ class HomeScreen extends StatelessWidget {
     int index,
     CartProvider cartProvider,
   ) {
-    final products = _getProducts();
-    final product = products[index];
+    final product = _products[index];
 
     return Card(
       elevation: 4,
@@ -397,7 +440,7 @@ class HomeScreen extends StatelessWidget {
                   top: Radius.circular(12),
                 ),
                 child: Image.network(
-                  product["image"]!,
+                  product["imageUrl"] ?? product["image"] ?? '',
                   width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
@@ -435,14 +478,23 @@ class HomeScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => ProductDetailScreen(
-                          product: product,
-                          productId: 'product_${index + 1}',
+                          product: {
+                            'name': product["name"]?.toString() ?? '',
+                            'price': _formatPrice(product["price"]),
+                            'image':
+                                product["imageUrl"]?.toString() ??
+                                product["image"]?.toString() ??
+                                '',
+                          },
+                          productId:
+                              product["id"]?.toString() ??
+                              'product_${index + 1}',
                         ),
                       ),
                     );
                   },
                   child: Text(
-                    product["name"]!,
+                    product["name"]?.toString() ?? 'Unknown',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -454,7 +506,7 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  product["price"]!,
+                  _formatPrice(product["price"]),
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.blue,
@@ -468,10 +520,16 @@ class HomeScreen extends StatelessWidget {
                     onPressed: () {
                       // Tạo cart item từ dữ liệu
                       final cartItem = CartItemModel(
-                        productId: 'product_${index + 1}',
-                        productName: product["name"]!,
-                        price: _parsePrice(product["price"]!),
-                        imageUrl: product["image"]!,
+                        productId:
+                            product["id"]?.toString() ?? 'product_${index + 1}',
+                        productName: product["name"]?.toString() ?? 'Unknown',
+                        price: (product["price"] is num)
+                            ? (product["price"] as num).toDouble()
+                            : 0.0,
+                        imageUrl:
+                            product["imageUrl"]?.toString() ??
+                            product["image"]?.toString() ??
+                            '',
                         quantity: 1,
                       );
 
@@ -507,40 +565,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Helper method để lấy danh sách sản phẩm
-  List<Map<String, String>> _getProducts() {
-    return [
-      {
-        "name": "iPhone 15",
-        "price": "25.000.000 ₫",
-        "image":
-            "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=400&h=400&fit=crop",
-      },
-      {
-        "name": "MacBook Pro",
-        "price": "45.000.000 ₫",
-        "image":
-            "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop",
-      },
-      {
-        "name": "AirPods Pro",
-        "price": "6.000.000 ₫",
-        "image":
-            "https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400&h=400&fit=crop",
-      },
-      {
-        "name": "iPad Air",
-        "price": "18.000.000 ₫",
-        "image":
-            "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400&h=400&fit=crop",
-      },
-    ];
-  }
-
-  // Helper method để parse giá từ string
-  double _parsePrice(String priceString) {
-    // Loại bỏ ký tự không phải số
-    String cleanPrice = priceString.replaceAll(RegExp(r'[^\d]'), '');
-    return double.tryParse(cleanPrice) ?? 0.0;
+  // Helper method để format giá
+  String _formatPrice(dynamic price) {
+    if (price == null) return '0 ₫';
+    double priceValue = 0.0;
+    if (price is num) {
+      priceValue = price.toDouble();
+    } else if (price is String) {
+      priceValue = double.tryParse(price) ?? 0.0;
+    }
+    return '${priceValue.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} ₫';
   }
 }
