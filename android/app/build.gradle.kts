@@ -6,16 +6,17 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapp"
+    namespace = "com.example.do_an_ltddnc"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     defaultConfig {
-        applicationId = "com.example.myapp"
+        applicationId = "com.example.do_an_ltddnc"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        multiDexEnabled = true
     }
 
     compileOptions {
@@ -39,6 +40,9 @@ flutter {
 }
 
 dependencies {
+    // MultiDex support
+    implementation("androidx.multidex:multidex:2.0.1")
+    
     // Firebase BoM - đồng bộ với Google Services 4.4.3
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
