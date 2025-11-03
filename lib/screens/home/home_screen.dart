@@ -270,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                childAspectRatio: 0.8,
+                                childAspectRatio: 0.65,
                                 crossAxisSpacing: 16,
                                 mainAxisSpacing: 16,
                               ),
@@ -429,6 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
             aspectRatio: 1.2, // Width : Height ratio for better proportion
             child: Container(
               width: double.infinity,
+              height: 180,
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: const BorderRadius.vertical(
@@ -442,6 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Image.network(
                   product["imageUrl"] ?? product["image"] ?? '',
                   width: double.infinity,
+                  height: 180,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
@@ -518,6 +520,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Lấy CartProvider
+                      final cartProvider = Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      );
+
                       // Tạo cart item từ dữ liệu
                       final cartItem = CartItemModel(
                         productId:

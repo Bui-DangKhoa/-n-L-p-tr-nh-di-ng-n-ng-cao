@@ -241,6 +241,12 @@ class ProductDetailScreen extends StatelessWidget {
               width: 200,
               child: ElevatedButton.icon(
                 onPressed: () {
+                  // Lấy CartProvider
+                  final cartProvider = Provider.of<CartProvider>(
+                    context,
+                    listen: false,
+                  );
+
                   final cartItem = CartItemModel(
                     productId: productId,
                     productName: product["name"]!,

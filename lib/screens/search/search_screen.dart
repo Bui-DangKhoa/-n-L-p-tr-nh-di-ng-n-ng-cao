@@ -351,7 +351,7 @@ class _SearchScreenState extends State<SearchScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.8, // Adjusted for better proportion
+              childAspectRatio: 0.65, // Adjusted for better proportion
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -524,6 +524,7 @@ class _SearchScreenState extends State<SearchScreen> {
             aspectRatio: 1.2, // Width : Height ratio for better proportion
             child: Container(
               width: double.infinity,
+              height: 180,
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: const BorderRadius.vertical(
@@ -537,6 +538,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Image.network(
                   product["image"]!,
                   width: double.infinity,
+                  height: 180,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(

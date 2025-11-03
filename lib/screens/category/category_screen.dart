@@ -135,7 +135,7 @@ class CategoryScreen extends StatelessWidget {
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             childAspectRatio:
-                                0.8, // Adjusted for better proportion
+                                0.65, // Adjusted for better proportion
                             crossAxisSpacing: 16,
                             mainAxisSpacing: 16,
                           ),
@@ -192,6 +192,7 @@ class CategoryScreen extends StatelessWidget {
             aspectRatio: 1.2, // Width : Height ratio for better proportion
             child: Container(
               width: double.infinity,
+              height: 180,
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: const BorderRadius.vertical(
@@ -205,6 +206,7 @@ class CategoryScreen extends StatelessWidget {
                 child: Image.network(
                   product["image"]!,
                   width: double.infinity,
+                  height: 180,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
@@ -272,6 +274,12 @@ class CategoryScreen extends StatelessWidget {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      // Lấy CartProvider
+                      final cartProvider = Provider.of<CartProvider>(
+                        context,
+                        listen: false,
+                      );
+
                       // Tạo cart item từ dữ liệu
                       final cartItem = CartItemModel(
                         productId: 'product_${categoryName}_${index + 1}',
