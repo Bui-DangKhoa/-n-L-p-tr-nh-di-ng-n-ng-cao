@@ -15,22 +15,33 @@
 
 Ứng dụng Mua Sắm là một ứng dụng thương mại điện tử được phát triển bằng Flutter, cho phép người dùng:
 
-- Xem và tìm kiếm sản phẩm
-- Thêm sản phẩm vào giỏ hàng
+### 👥 Chức năng người dùng:
+
+- Xem và tìm kiếm sản phẩm theo danh mục
+- Thêm sản phẩm vào giỏ hàng với đồng bộ Firebase realtime
 - **Lưu sản phẩm yêu thích (Wishlist)** 🆕
 - Quản lý tài khoản cá nhân
 - **Xem thông báo và khuyến mãi** 🆕
 - **Quản lý địa chỉ giao hàng** 🆕
 - **Áp dụng mã giảm giá** 🆕
-- Admin có thể quản lý sản phẩm (Thêm/Sửa/Xóa)
-- **Admin quản lý danh mục và đánh giá** 🆕
+- Xem giỏ hàng và thanh toán
+
+### 👑 Chức năng Admin:
+
+- Quản lý sản phẩm (Thêm/Sửa/Xóa)
+- **Quản lý danh mục động** 🆕
+- **Quản lý mã giảm giá (Coupons)** 🆕
+- **Quản lý Banner trang chủ** 🆕
+- **Quản lý thương hiệu (Brands)** 🆕
+- Xem danh sách đơn hàng
 
 **Công nghệ sử dụng:**
 
 - Flutter (Frontend)
 - Firebase Authentication (Đăng nhập/Đăng ký)
-- Cloud Firestore (Database - 10 Collections)
+- Cloud Firestore (Database - 12+ Collections)
 - Provider (State Management)
+- Firebase Storage (Lưu trữ hình ảnh)
 
 ---
 
@@ -309,86 +320,201 @@ Admin Panel hiển thị:
 
 ---
 
-## 🆕 Chức năng mới (6 Collections Firebase)
+## 🔥 Chức năng mới đã triển khai
 
-### 1. 📁 Categories (Quản lý Danh mục)
+### 1. 🛒 Quản lý Giỏ hàng với Firebase (Cart Management)
 
-**Mô tả:** Quản lý danh mục sản phẩm động từ Firebase
+**Mô tả:** Giỏ hàng được lưu trữ và đồng bộ realtime trên Firebase
 
+**Collection:** `orders` (với status = 'cart')
+**Service:** `CartService`
+**Provider:** `CartProvider`
+
+**Tính năng:**
+
+- ✅ Lưu giỏ hàng trên Firebase (mỗi user có 1 cart duy nhất)
+- ✅ Đồng bộ realtime giữa các thiết bị
+- ✅ Thêm/xóa/sửa sản phẩm trong giỏ
+- ✅ Cập nhật số lượng sản phẩm
+- ✅ Tính tổng tiền tự động
+- ✅ Áp dụng mã giảm giá
+- ✅ Chuyển đổi giỏ hàng thành đơn hàng khi checkout
+
+**Cách sử dụng:**
+
+1. Thêm sản phẩm vào giỏ từ bất kỳ màn hình nào
+2. Xem giỏ hàng qua icon 🛒 trên AppBar
+3. Điều chỉnh số lượng hoặc xóa sản phẩm
+4. Áp dụng mã giảm giá (nếu có)
+5. Nhấn "Thanh toán" để hoàn tất
+
+### 2. 📁 Quản lý Danh mục động (Category Management)
+
+**Mô tả:** Admin quản lý danh mục sản phẩm, hiển thị động trên trang chủ
+
+**Collection:** `categories`
+**Service:** `CategoryService`
 **Model:** `CategoryModel`
 
-- id, name, description
-- imageUrl, productCount
-- isActive, createdAt, updatedAt
-
-**Service:** `CategoryService`
-
-- getAllCategories()
-- getCategoryById()
-- createCategory()
-- updateCategory()
-- deleteCategory()
-
 **Tính năng:**
 
-- ✅ CRUD danh mục sản phẩm
-- ✅ Đếm số sản phẩm trong danh mục
-- ✅ Bật/tắt hiển thị danh mục
-- ✅ Hình ảnh đại diện cho danh mục
+- ✅ CRUD danh mục sản phẩm (Thêm/Sửa/Xóa)
+- ✅ Hiển thị danh mục trên trang chủ với hình ảnh
+- ✅ Xem sản phẩm theo danh mục
+- ✅ Đếm số lượng sản phẩm trong danh mục
+- ✅ Admin: Quản lý qua Account → Quản trị viên → Quản lý danh mục
+- ✅ User: Nhấn vào danh mục để xem sản phẩm
 
-### 2. ⭐ Reviews (Đánh giá Sản phẩm)
+**Cách sử dụng Admin:**
 
-**Mô tả:** Hệ thống đánh giá và nhận xét sản phẩm
+1. Đăng nhập admin@admin.com
+2. Account → Quản trị viên → Quản lý danh mục
+3. Nhấn nút "+" để thêm danh mục mới
+4. Nhập: Tên, Mô tả, URL hình ảnh
+5. Long press trên danh mục để Sửa/Xóa
 
-**Model:** `ReviewModel`
+**Cách sử dụng User:**
 
-- id, productId, userId, userName
-- rating (1-5 sao), comment
-- images (ảnh đính kèm)
-- isVerifiedPurchase (đã mua hàng)
-- helpfulCount (số người thấy hữu ích)
-- createdAt
-
-**Service:** `ReviewService`
-
-- getProductReviews(productId)
-- getUserReviews(userId)
-- addReview()
-- updateReview()
-- deleteReview()
-- markHelpful()
-
-**Tính năng:**
-
-- ✅ Đánh giá 1-5 sao
-- ✅ Viết nhận xét chi tiết
-- ✅ Đính kèm hình ảnh
-- ✅ Xác thực đã mua hàng
-- ✅ Đánh dấu review hữu ích
-- ✅ Tính điểm trung bình sản phẩm
+1. Xem danh mục trên trang chủ (cuộn ngang)
+2. Nhấn vào danh mục để xem sản phẩm
+3. Thêm sản phẩm vào giỏ hàng hoặc wishlist
 
 ### 3. ❤️ Wishlist (Danh sách Yêu thích)
 
 **Mô tả:** Lưu sản phẩm yêu thích của người dùng
 
-**Model:** `WishlistModel`
-
-- id, userId, productId
-- createdAt
-
+**Collection:** `wishlist`
 **Service:** `WishlistService`
-
-- getUserWishlist(userId)
-- addToWishlist()
-- removeFromWishlist()
-- isInWishlist()
-
 **Provider:** `WishlistProvider`
 
-- wishlistItems, wishlistProducts
-- loadWishlist()
-- addToWishlist()
-- removeFromWishlist()
+**Tính năng:**
+
+- ✅ Thêm/xóa sản phẩm yêu thích
+- ✅ Xem danh sách wishlist
+- ✅ Thêm từ wishlist vào giỏ hàng
+- ✅ Đồng bộ realtime với Firebase
+- ✅ Icon trái tim trên mỗi sản phẩm
+
+**Cách sử dụng:**
+
+1. Nhấn icon ❤️ trên card sản phẩm để thêm/xóa
+2. Vào Account → Danh sách yêu thích để xem tất cả
+3. Nhấn "Thêm vào giỏ" từ wishlist
+
+### 4. 🎟️ Hệ thống Mã giảm giá (Coupon System)
+
+**Mô tả:** Admin tạo và quản lý mã giảm giá, user áp dụng khi thanh toán
+
+**Collection:** `coupons`
+**Service:** `CouponService`
+**Model:** `CouponModel`
+
+**Tính năng:**
+
+- ✅ Tạo mã giảm giá theo % hoặc số tiền cố định
+- ✅ Thiết lập điều kiện: đơn tối thiểu, hạn sử dụng
+- ✅ Giới hạn số lần sử dụng
+- ✅ Bật/tắt mã giảm giá
+- ✅ Áp dụng mã khi thanh toán
+
+**Admin - Quản lý Coupons:**
+
+1. Account → Quản trị viên → Quản lý mã giảm giá
+2. Nhấn "+" để tạo coupon mới
+3. Nhập: Mã, Tiêu đề, Mô tả, Loại (% hoặc Fixed)
+4. Thiết lập: Giá trị giảm, Đơn tối thiểu, Giảm tối đa
+5. Chọn ngày bắt đầu và kết thúc
+
+**User - Sử dụng Coupon:**
+
+1. Thêm sản phẩm vào giỏ hàng
+2. Trong màn hình giỏ hàng, nhấn "Chọn mã giảm giá"
+3. Chọn mã phù hợp (kiểm tra điều kiện)
+4. Xem số tiền giảm và tổng thanh toán
+
+### 5. 📍 Quản lý Địa chỉ (Address Management)
+
+**Mô tả:** User quản lý địa chỉ giao hàng
+
+**Collection:** `addresses`
+**Service:** `AddressService`
+**Provider:** `AddressProvider`
+
+**Tính năng:**
+
+- ✅ Thêm nhiều địa chỉ giao hàng
+- ✅ Đặt địa chỉ mặc định
+- ✅ Sửa/xóa địa chỉ
+- ✅ Chọn địa chỉ khi checkout
+
+**Cách sử dụng:**
+
+1. Account → Địa chỉ giao hàng
+2. Nhấn "+" để thêm địa chỉ mới
+3. Nhập: Tên, SĐT, Địa chỉ đầy đủ
+4. Bật "Địa chỉ mặc định" nếu muốn
+5. Sửa/xóa bằng icon tương ứng
+
+### 6. 🔔 Hệ thống Thông báo (Notification System)
+
+**Mô tả:** Thông báo cho user về đơn hàng, khuyến mãi
+
+**Collection:** `notifications`
+**Service:** `NotificationService`
+**Provider:** `NotificationProvider`
+
+**Tính năng:**
+
+- ✅ Nhận thông báo realtime
+- ✅ Đánh dấu đã đọc
+- ✅ Xóa thông báo
+- ✅ Phân loại: Đơn hàng, Khuyến mãi, Hệ thống
+- ✅ Badge số lượng chưa đọc
+
+**Cách sử dụng:**
+
+1. Nhấn icon 🔔 trên AppBar (có badge nếu có thông báo mới)
+2. Xem danh sách thông báo
+3. Nhấn vào thông báo để xem chi tiết
+4. Vuốt sang trái để xóa
+
+### 7. 🎨 Quản lý Banner & Brand (Admin)
+
+**Mô tả:** Admin quản lý banner trang chủ và thương hiệu
+
+**Collections:** `banners`, `brands`
+**Services:** `BannerService`, `BrandService`
+**Providers:** `BannerProvider`, `BrandProvider`
+
+**Banner - Tính năng:**
+
+- ✅ Thêm/sửa/xóa banner trang chủ
+- ✅ Tải ảnh lên Firebase Storage
+- ✅ Thiết lập link điều hướng
+- ✅ Bật/tắt hiển thị
+- ✅ Sắp xếp thứ tự hiển thị
+
+**Brand - Tính năng:**
+
+- ✅ Quản lý danh sách thương hiệu
+- ✅ Logo và mô tả thương hiệu
+- ✅ Lọc sản phẩm theo brand
+- ✅ Hiển thị trên trang chủ
+
+**Admin - Cách sử dụng:**
+
+1. Banner: Account → Quản lý Banner
+2. Brand: Account → Quản lý Thương hiệu
+3. Thêm/Sửa/Xóa qua UI trực quan
+
+### 8. ⭐ Hệ thống Đánh giá (Review System) - Đã có Model
+
+**Mô tả:** Đánh giá và nhận xét sản phẩm (Model đã tạo, chờ tích hợp UI)
+
+**Collection:** `reviews`
+**Service:** `ReviewService`
+**Model:** `ReviewModel`
+
 - toggleWishlist()
 - isInWishlist()
 
@@ -857,6 +983,118 @@ Admin Panel hiển thị:
 | **notifications** | **✅** | Dynamic   | **User notifications** |
 | **addresses**     | **✅** | Dynamic   | **Delivery addresses** |
 | **coupons**       | **✅** | Dynamic   | **Discount coupons**   |
+| **banners**       | **✅** | Dynamic   | **Homepage banners**   |
+| **brands**        | **✅** | Dynamic   | **Product brands**     |
+
+**Tổng cộng:** 12+ Firebase Collections hoạt động
+
+---
+
+## 📦 Feature Branches (GitHub Organization)
+
+Dự án được tổ chức thành các nhánh chức năng độc lập:
+
+| Branch                      | Chức năng                                | Status |
+| --------------------------- | ---------------------------------------- | ------ |
+| **main**                    | Nhánh chính (stable)                     | ✅     |
+| **cart-management**         | Cart với Firebase (orders collection)    | ✅     |
+| **category-management**     | CRUD Categories + Dynamic Home           | ✅     |
+| **wishlist**                | Yêu thích sản phẩm                       | ✅     |
+| **coupon-system**           | Mã giảm giá                              | ✅     |
+| **address-management**      | Địa chỉ giao hàng                        | ✅     |
+| **notification-system**     | Thông báo realtime                       | ✅     |
+| **banner-brand-management** | Banner trang chủ + Brand                 | ✅     |
+| **review-system**           | Đánh giá sản phẩm (model, service đã có) | ✅     |
+
+**Workflow:**
+
+1. Mỗi nhánh chứa 1 chức năng riêng
+2. Test trên nhánh trước khi merge vào `main`
+3. Commit message rõ ràng, có prefix (feat:, fix:, docs:)
+4. Pull request để review code
+5. Merge vào main khi stable
+
+**Git Commands:**
+
+```bash
+# Chuyển nhánh
+git checkout cart-management
+
+# Xem tất cả nhánh
+git branch -a
+
+# Pull code mới nhất
+git pull origin main
+
+# Merge nhánh vào main (sau khi test)
+git checkout main
+git merge cart-management
+git push origin main
+```
+
+---
+
+## 🎯 Công nghệ Chi tiết
+
+### Backend: Firebase
+
+- **Authentication:** Email/Password với role-based access
+- **Firestore:** NoSQL realtime database (12+ collections)
+- **Firebase Storage:** Chưa dùng (dự kiến cho upload ảnh)
+- **Security Rules:** Custom rules cho từng collection
+
+### Frontend: Flutter
+
+- **Framework:** Flutter 3.x
+- **Language:** Dart 3.x
+- **State Management:** Provider pattern
+- **Navigation:** Named routes + onGenerateRoute
+- **Architecture:** Clean architecture với Services/Providers/Models
+
+### Services Layer
+
+- `AuthService` - Authentication
+- `ProductService` - Sản phẩm CRUD
+- `CartService` - Giỏ hàng Firebase (orders collection)
+- `CategoryService` - Danh mục CRUD
+- `WishlistService` - Yêu thích
+- `CouponService` - Mã giảm giá
+- `AddressService` - Địa chỉ giao hàng
+- `NotificationService` - Thông báo
+- `BannerService` - Banner trang chủ
+- `BrandService` - Thương hiệu
+- `ReviewService` - Đánh giá (đã tạo)
+
+### Providers
+
+- `AuthProvider` - User state
+- `CartProvider` - Cart state + Firebase sync
+- `WishlistProvider` - Wishlist state
+- `AddressProvider` - Address state
+- `NotificationProvider` - Notification state
+- `BannerProvider` - Banner state
+- `BrandProvider` - Brand state
+
+### Models
+
+- `UserModel`, `ProductModel`, `OrderModel`, `CartItemModel`
+- `CategoryModel`, `WishlistModel`, `CouponModel`
+- `AddressModel`, `NotificationModel`
+- `BannerModel`, `BrandModel`, `ReviewModel`
+
+---
+
+## 📞 Liên hệ & Hỗ trợ
+
+**GitHub Repository:**
+https://github.com/Bui-DangKhoa/-n-L-p-tr-nh-di-ng-n-ng-cao
+
+**Email hỗ trợ:**
+[Thêm email của bạn]
+
+**Phiên bản:** 2.0.0  
+**Ngày cập nhật:** November 2025  
+**Thay đổi mới:** Cart Firebase integration, Dynamic Categories, Feature Branches, 12+ Collections
 
 **Tổng cộng:** 10 Firebase Collections hoạt động
 
