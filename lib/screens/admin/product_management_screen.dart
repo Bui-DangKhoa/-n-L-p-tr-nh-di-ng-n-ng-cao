@@ -107,9 +107,15 @@ class _ProductManagementScreenState extends State<ProductManagementScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final role =
+        (authProvider.user?.role ?? '').trim().toLowerCase();
+    final email =
+        (authProvider.user?.email ?? '').trim().toLowerCase();
+    final isAdmin =
+        role == 'admin' || email == 'admin@admin.com';
 
     // Check if user is admin
-    if (authProvider.user?.role != 'admin') {
+    if (!isAdmin) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Không có quyền truy cập'),

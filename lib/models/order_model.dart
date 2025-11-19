@@ -8,7 +8,8 @@ class OrderModel {
   final String deliveryAddress;
   final List<CartItemModel> items;
   final double totalAmount;
-  final String status; // 'pending', 'confirmed', 'shipping', 'delivered', 'cancelled'
+  final String
+  status; // 'cart', 'pending', 'confirmed', 'shipping', 'delivered', 'cancelled'
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -51,14 +52,16 @@ class OrderModel {
       deliveryAddress: map['deliveryAddress'] ?? '',
       items: map['items'] != null
           ? List<CartItemModel>.from(
-          map['items'].map((x) => CartItemModel.fromMap(x)))
+              map['items'].map((x) => CartItemModel.fromMap(x)),
+            )
           : [],
       totalAmount: map['totalAmount'] is int
           ? (map['totalAmount'] as int).toDouble()
           : (map['totalAmount'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'pending',
       createdAt: DateTime.fromMillisecondsSinceEpoch(
-          map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch),
+        map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+      ),
       updatedAt: map['updatedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'])
           : null,
@@ -66,10 +69,7 @@ class OrderModel {
   }
 
   /// Cập nhật trạng thái order và trả về bản mới
-  OrderModel copyWith({
-    String? status,
-    DateTime? updatedAt,
-  }) {
+  OrderModel copyWith({String? status, DateTime? updatedAt}) {
     return OrderModel(
       id: id,
       userId: userId,

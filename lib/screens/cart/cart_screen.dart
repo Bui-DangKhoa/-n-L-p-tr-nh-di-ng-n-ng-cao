@@ -2,9 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../models/cart_item_model.dart';
+import '../../models/coupon_model.dart';
+import '../../services/coupon_service.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
+
+  @override
+  State<CartScreen> createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load giỏ hàng từ Firebase khi màn hình khởi tạo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).loadCart();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +33,13 @@ class CartScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      body: cartProvider.items.isEmpty
+      body: cartProvider.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : cartProvider.items.isEmpty
           ? _buildEmptyCart(context)
-          : _buildCartContent(cartProvider),
-      bottomNavigationBar: cartProvider.items.isNotEmpty
+          : _buildCartContent(context, cartProvider),
+      bottomNavigationBar:
+          cartProvider.items.isNotEmpty && !cartProvider.isLoading
           ? _buildCheckoutButton(context, cartProvider)
           : null,
     );
@@ -68,7 +87,7 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartContent(CartProvider cartProvider) {
+  Widget _buildCartContent(BuildContext context, CartProvider cartProvider) {
     return Column(
       children: [
         // Header thông tin giỏ hàng
@@ -111,6 +130,7 @@ class CartScreen extends StatelessWidget {
             },
           ),
         ),
+        _buildCouponSection(context, cartProvider),
       ],
     );
   }
@@ -206,9 +226,11 @@ class CartScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (cartItem.quantity > 1) {
-                          cartProvider.decreaseQuantity(cartItem.productId);
+                          await cartProvider.decreaseQuantity(
+                            cartItem.productId,
+                          );
                         } else {
                           _showRemoveDialog(context, cartItem, cartProvider);
                         }
@@ -242,8 +264,8 @@ class CartScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      onPressed: () {
-                        cartProvider.increaseQuantity(cartItem.productId);
+                      onPressed: () async {
+                        await cartProvider.increaseQuantity(cartItem.productId);
                       },
                       icon: const Icon(Icons.add, color: Colors.green),
                       constraints: const BoxConstraints(
@@ -268,7 +290,7 @@ class CartScreen extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 5,
             offset: const Offset(0, -2),
@@ -278,6 +300,31 @@ class CartScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (cartProvider.selectedCoupon != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Mã giảm giá (${cartProvider.selectedCoupon!.code}):",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.green,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    "-${_formatPrice(cartProvider.discountAmount)} ₫",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.green,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -286,7 +333,7 @@ class CartScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                "${_formatPrice(cartProvider.totalAmount)} ₫",
+                "${_formatPrice(cartProvider.payableAmount)} ₫",
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -340,8 +387,8 @@ class CartScreen extends StatelessWidget {
               child: const Text("Hủy"),
             ),
             TextButton(
-              onPressed: () {
-                cartProvider.removeItem(cartItem.productId);
+              onPressed: () async {
+                await cartProvider.removeItem(cartItem.productId);
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -372,8 +419,22 @@ class CartScreen extends StatelessWidget {
             children: [
               Text("Số lượng sản phẩm: ${cartProvider.totalQuantity}"),
               const SizedBox(height: 8),
+              if (cartProvider.selectedCoupon != null) ...[
+                Text(
+                  "Mã giảm giá: ${cartProvider.selectedCoupon!.code}",
+                  style: const TextStyle(color: Colors.green),
+                ),
+                Text(
+                  "Giảm: ${_formatPrice(cartProvider.discountAmount)} ₫",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               Text(
-                "Tổng tiền: ${_formatPrice(cartProvider.totalAmount)} ₫",
+                "Tổng tiền: ${_formatPrice(cartProvider.payableAmount)} ₫",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
@@ -386,8 +447,8 @@ class CartScreen extends StatelessWidget {
               child: const Text("Hủy"),
             ),
             ElevatedButton(
-              onPressed: () {
-                cartProvider.clearCart();
+              onPressed: () async {
+                await cartProvider.clearCart();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop(); // Trở về trang chủ
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -411,7 +472,223 @@ class CartScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildCouponSection(BuildContext context, CartProvider cartProvider) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: InkWell(
+        onTap: () => _openCouponSelector(context, cartProvider),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.discount, color: Colors.orange),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cartProvider.selectedCoupon != null
+                          ? 'Đã áp dụng mã: ${cartProvider.selectedCoupon!.code}'
+                          : 'Chọn mã giảm giá',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (cartProvider.selectedCoupon != null)
+                      Text(
+                        cartProvider.selectedCoupon!.title,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                cartProvider.selectedCoupon != null
+                    ? Icons.edit
+                    : Icons.arrow_forward_ios,
+                size: 18,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openCouponSelector(BuildContext context, CartProvider cartProvider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) =>
+          CouponSelectorBottomSheet(cartProvider: cartProvider),
+    );
+  }
+
   String _formatPrice(double price) {
+    return price
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
+  }
+}
+
+class CouponSelectorBottomSheet extends StatelessWidget {
+  final CartProvider cartProvider;
+  final CouponService _couponService = CouponService();
+
+  CouponSelectorBottomSheet({super.key, required this.cartProvider});
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) {
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const Text(
+                'Chọn mã giảm giá',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: StreamBuilder<List<CouponModel>>(
+                  stream: _couponService.getActiveCoupons(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final coupons = snapshot.data ?? [];
+                    if (coupons.isEmpty) {
+                      return const Center(
+                        child: Text('Hiện chưa có mã giảm giá nào'),
+                      );
+                    }
+                    return ListView.builder(
+                      controller: scrollController,
+                      itemCount: coupons.length,
+                      itemBuilder: (context, index) {
+                        final coupon = coupons[index];
+                        final isSelected =
+                            cartProvider.selectedCoupon?.id == coupon.id;
+                        final discountPreview = coupon.calculateDiscount(
+                          cartProvider.totalAmount,
+                        );
+                        return Card(
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.orange.shade50,
+                              child: const Icon(
+                                Icons.percent,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            title: Text(
+                              '${coupon.code} - ${coupon.title}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(coupon.description),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Giảm ${_formatDiscount(coupon)} · Đơn tối thiểu ${_formatPrice(coupon.minOrderAmount)} ₫',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                if (discountPreview > 0)
+                                  Text(
+                                    'Ước tính giảm: ${_formatPrice(discountPreview)} ₫',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: isSelected
+                                ? const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.green,
+                                  )
+                                : null,
+                            onTap: () {
+                              if (cartProvider.totalAmount <
+                                  coupon.minOrderAmount) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Đơn tối thiểu ${_formatPrice(coupon.minOrderAmount)} ₫ để dùng mã này',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              cartProvider.applyCoupon(coupon);
+                              Navigator.pop(context);
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+              if (cartProvider.selectedCoupon != null)
+                TextButton.icon(
+                  onPressed: () {
+                    cartProvider.removeCoupon();
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.close, color: Colors.red),
+                  label: const Text(
+                    'Bỏ chọn mã giảm giá',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static String _formatDiscount(CouponModel coupon) {
+    if (coupon.type == 'percentage') {
+      return '${coupon.value.toStringAsFixed(0)}%';
+    }
+    return '${_formatPrice(coupon.value)} ₫';
+  }
+
+  static String _formatPrice(double price) {
     return price
         .toStringAsFixed(0)
         .replaceAllMapped(

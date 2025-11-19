@@ -273,7 +273,7 @@ class CategoryScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Lấy CartProvider
                       final cartProvider = Provider.of<CartProvider>(
                         context,
@@ -290,7 +290,7 @@ class CategoryScreen extends StatelessWidget {
                       );
 
                       // Thêm vào giỏ hàng
-                      cartProvider.addItem(cartItem);
+                      await cartProvider.addItem(cartItem);
 
                       // Hiển thị thông báo
                       ScaffoldMessenger.of(context).showSnackBar(

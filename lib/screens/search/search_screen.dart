@@ -605,7 +605,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       final cartItem = CartItemModel(
                         productId: 'search_product_$index',
                         productName: product["name"]!,
@@ -614,7 +614,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         quantity: 1,
                       );
 
-                      cartProvider.addItem(cartItem);
+                      await cartProvider.addItem(cartItem);
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(

@@ -86,7 +86,11 @@ class ProductService {
   Future<ProductModel?> getProduct(String productId) async {
     try {
       final doc = await _productsRef.doc(productId).get();
-      return doc.data();
+      final product = doc.data();
+      if (product != null) {
+        product.id = doc.id;
+      }
+      return product;
     } catch (e) {
       print("❌ Lỗi lấy sản phẩm: $e");
       return null;
