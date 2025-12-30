@@ -7,8 +7,11 @@ import '../../providers/wishlist_provider.dart'; // 🆕 Import wishlist provide
 import '../../providers/banner_provider.dart';
 import '../../providers/brand_provider.dart';
 import '../../models/cart_item_model.dart'; // ✅ Import cart item model
+import '../../models/category_model.dart'; // 🆕 Import category model
 import '../../services/product_service.dart'; // ✅ Import product service
+import '../../services/category_service.dart'; // 🆕 Import category service
 import '../product/product_detail_screen.dart';
+import '../category/category_products_screen.dart'; // 🆕 Import category products screen
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,6 +22,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ProductService _productService = ProductService();
+  final CategoryService _categoryService = CategoryService(); // 🆕 Category service
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
   String? _loadedWishlistUserId;
@@ -253,54 +257,100 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Categories Section
+            // Categories Section - Dynamic from Firebase
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Danh mục sản phẩm",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Danh mục sản phẩm",
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      if (isAdmin)
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.pushNamed(context, '/category-management');
+                          },
+                          icon: const Icon(Icons.settings, size: 16),
+                          label: const Text('Quản lý'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.blue,
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 120,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _buildCategoryCard(
-                          context,
-                          "Điện thoại",
-                          Icons.phone_android,
-                          Colors.blue,
+                  StreamBuilder<List<CategoryModel>>(
+                    stream: _categoryService.getCategories(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox(
+                          height: 120,
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: Text(
+                              'Lỗi: ${snapshot.error}',
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final categories = snapshot.data ?? [];
+
+                      if (categories.isEmpty) {
+                        return SizedBox(
+                          height: 120,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.category_outlined, 
+                                  size: 40, 
+                                  color: Colors.grey[400]
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Chưa có danh mục',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                if (isAdmin) ...[
+                                  const SizedBox(height: 4),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pushNamed(context, '/category-management');
+                                    },
+                                    child: const Text('Thêm danh mục'),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) {
+                            final category = categories[index];
+                            return _buildDynamicCategoryCard(context, category, index);
+                          },
                         ),
-                        _buildCategoryCard(
-                          context,
-                          "Laptop",
-                          Icons.laptop,
-                          Colors.green,
-                        ),
-                        _buildCategoryCard(
-                          context,
-                          "Thời trang",
-                          Icons.checkroom,
-                          Colors.purple,
-                        ),
-                        _buildCategoryCard(
-                          context,
-                          "Sách",
-                          Icons.book,
-                          Colors.orange,
-                        ),
-                        _buildCategoryCard(
-                          context,
-                          "Đồ gia dụng",
-                          Icons.home,
-                          Colors.red,
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -518,15 +568,33 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryCard(
+  // Dynamic category card from Firebase
+  Widget _buildDynamicCategoryCard(
     BuildContext context,
-    String title,
-    IconData icon,
-    Color color,
+    CategoryModel category,
+    int index,
   ) {
+    // Rotate colors for visual variety
+    final colors = [
+      Colors.blue,
+      Colors.green,
+      Colors.purple,
+      Colors.orange,
+      Colors.red,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+    ];
+    final color = colors[index % colors.length];
+
     return GestureDetector(
       onTap: () {
-        Navigator.pushNamed(context, '/category/$title');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryProductsScreen(category: category),
+          ),
+        );
       },
       child: Container(
         width: 100,
@@ -539,16 +607,49 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
+            // Try to load image if available, otherwise use icon
+            if (category.imageUrl.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  category.imageUrl,
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(Icons.category, size: 40, color: color);
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: color,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+            else
+              Icon(Icons.category, size: 40, color: color),
             const SizedBox(height: 8),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                category.name,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -837,7 +938,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       // Lấy CartProvider
                       final cartProvider = Provider.of<CartProvider>(
                         context,
@@ -864,7 +965,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
 
                       // Thêm vào giỏ hàng
-                      cartProvider.addItem(cartItem);
+                      await cartProvider.addItem(cartItem);
 
                       // Hiển thị thông báo
                       ScaffoldMessenger.of(context).showSnackBar(

@@ -293,7 +293,7 @@ class ProductDetailScreen extends StatelessWidget {
             SizedBox(
               width: 200,
               child: ElevatedButton.icon(
-                onPressed: () {
+                onPressed: () async {
                   // Lấy CartProvider
                   final cartProvider = Provider.of<CartProvider>(
                     context,
@@ -309,7 +309,7 @@ class ProductDetailScreen extends StatelessWidget {
                     quantity: 1,
                   );
 
-                  cartProvider.addItem(cartItem);
+                  await cartProvider.addItem(cartItem);
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
