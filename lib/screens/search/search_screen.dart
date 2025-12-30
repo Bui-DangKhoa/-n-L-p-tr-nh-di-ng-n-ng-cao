@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../models/cart_item_model.dart';
@@ -606,8 +607,12 @@ class _SearchScreenState extends State<SearchScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
+                      final firestore = FirebaseFirestore.instance;
+                      final productId = 'search_product_$index';
                       final cartItem = CartItemModel(
-                        productId: 'search_product_$index',
+                        productRef: firestore
+                            .collection('products')
+                            .doc(productId),
                         productName: product["name"]!,
                         price: _parsePrice(product["price"]!),
                         imageUrl: product["image"]!,

@@ -227,6 +227,13 @@ class AccountScreen extends StatelessWidget {
             title: "Thông tin mua sắm",
             children: [
               _buildInfoTile(
+                icon: Icons.favorite,
+                title: "Danh sách yêu thích",
+                subtitle: "Xem sản phẩm đã lưu",
+                color: Colors.pink,
+                onTap: () => Navigator.pushNamed(context, '/wishlist'),
+              ),
+              _buildInfoTile(
                 icon: Icons.shopping_bag,
                 title: "Sản phẩm trong giỏ",
                 subtitle: "${cartProvider.totalQuantity} sản phẩm",
@@ -240,8 +247,53 @@ class AccountScreen extends StatelessWidget {
                 color: Colors.green,
                 onTap: () => Navigator.pushNamed(context, '/cart'),
               ),
+              _buildInfoTile(
+                icon: Icons.location_on,
+                title: "Địa chỉ giao hàng",
+                subtitle: "Quản lý địa chỉ nhận hàng",
+                color: Colors.orange,
+                onTap: () => Navigator.pushNamed(context, '/addresses'),
+              ),
+              _buildInfoTile(
+                icon: Icons.notifications,
+                title: "Thông báo",
+                subtitle: "Xem thông báo và ưu đãi",
+                color: Colors.blue,
+                onTap: () => Navigator.pushNamed(context, '/notifications'),
+              ),
             ],
           ),
+
+          // Admin Features (if admin)
+          if (((authProvider.user?.role ?? '').trim().toLowerCase() ==
+                  'admin') ||
+              ((authProvider.user?.email ?? '').trim().toLowerCase() ==
+                  'admin@admin.com')) ...[
+            const SizedBox(height: 24),
+            _buildSection(
+              title: "Quản trị viên",
+              children: [
+                _buildActionTile(
+                  icon: Icons.category,
+                  title: "Quản lý danh mục",
+                  subtitle: "Thêm, sửa, xóa danh mục sản phẩm",
+                  color: Colors.deepPurple,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/category-management');
+                  },
+                ),
+                _buildActionTile(
+                  icon: Icons.inventory,
+                  title: "Quản lý sản phẩm",
+                  subtitle: "Quản lý danh sách sản phẩm",
+                  color: Colors.indigo,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/admin/products');
+                  },
+                ),
+              ],
+            ),
+          ],
 
           // Settings
           const SizedBox(height: 24),

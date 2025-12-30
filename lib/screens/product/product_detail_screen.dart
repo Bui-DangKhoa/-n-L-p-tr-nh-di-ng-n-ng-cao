@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
+import '../../providers/wishlist_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/cart_item_model.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -16,6 +19,8 @@ class ProductDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -24,6 +29,54 @@ class ProductDetailScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // Wishlist Button
+          if (authProvider.user != null)
+            FutureBuilder<bool>(
+              future: wishlistProvider.isInWishlist(
+                authProvider.user!.id,
+                productId,
+              ),
+              builder: (context, snapshot) {
+                final isInWishlist = snapshot.data ?? false;
+                return IconButton(
+                  icon: Icon(
+                    isInWishlist ? Icons.favorite : Icons.favorite_border,
+                    color: isInWishlist ? Colors.pink : null,
+                  ),
+                  onPressed: () async {
+                    if (authProvider.user == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Vui lòng đăng nhập để sử dụng wishlist',
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    await wishlistProvider.toggleWishlist(
+                      authProvider.user!.id,
+                      productId,
+                    );
+
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isInWishlist
+                                ? 'Đã xóa khỏi danh sách yêu thích'
+                                : 'Đã thêm vào danh sách yêu thích',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
+          // Cart Icon
           Stack(
             children: [
               IconButton(
@@ -247,8 +300,9 @@ class ProductDetailScreen extends StatelessWidget {
                     listen: false,
                   );
 
+                  final firestore = FirebaseFirestore.instance;
                   final cartItem = CartItemModel(
-                    productId: productId,
+                    productRef: firestore.collection('products').doc(productId),
                     productName: product["name"]!,
                     price: _parsePrice(product["price"]!),
                     imageUrl: product["image"]!,

@@ -9,14 +9,17 @@ class OrderService {
   }
 
   Stream<List<OrderModel>> getUserOrders(String userId) {
+    final userRef = _firestore.collection('users').doc(userId);
     return _firestore
         .collection('orders')
-        .where('userId', isEqualTo: userId)
+        .where('userRef', isEqualTo: userRef) // ✅ Query bằng DocumentReference
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => OrderModel.fromMap(doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => OrderModel.fromMap(doc.data()))
+              .toList(),
+        );
   }
 
   Stream<List<OrderModel>> getAllOrders() {
@@ -24,9 +27,11 @@ class OrderService {
         .collection('orders')
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => OrderModel.fromMap(doc.data()))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => OrderModel.fromMap(doc.data()))
+              .toList(),
+        );
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {

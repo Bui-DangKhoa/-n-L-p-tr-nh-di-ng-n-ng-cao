@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import '../../providers/cart_provider.dart';
 import '../../models/cart_item_model.dart';
@@ -281,8 +282,12 @@ class CategoryScreen extends StatelessWidget {
                       );
 
                       // Tạo cart item từ dữ liệu
+                      final firestore = FirebaseFirestore.instance;
+                      final productId = 'product_${categoryName}_${index + 1}';
                       final cartItem = CartItemModel(
-                        productId: 'product_${categoryName}_${index + 1}',
+                        productRef: firestore
+                            .collection('products')
+                            .doc(productId),
                         productName: product["name"]!,
                         price: _parsePrice(product["price"]!),
                         imageUrl: product["image"]!,

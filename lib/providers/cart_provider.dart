@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import '../models/cart_item_model.dart';
 
+import '../models/coupon_model.dart';
+
 class CartProvider with ChangeNotifier {
   // Map lưu trữ các sản phẩm trong giỏ hàng
   // Key: productId, Value: CartItemModel
@@ -21,6 +23,14 @@ class CartProvider with ChangeNotifier {
   double get totalAmount {
     return _items.values.fold(0.0, (sum, item) => sum + item.totalPrice);
   }
+
+  CouponModel? _selectedCoupon;
+  double _discountAmount = 0;
+
+  CouponModel? get selectedCoupon => _selectedCoupon;
+  double get discountAmount => _discountAmount;
+  double get payableAmount =>
+      (totalAmount - _discountAmount).clamp(0, double.infinity);
 
   // Kiểm tra sản phẩm có trong giỏ không
   bool isInCart(String productId) {
@@ -81,6 +91,8 @@ class CartProvider with ChangeNotifier {
   // Xóa toàn bộ giỏ hàng
   void clearCart() {
     _items.clear();
+    _selectedCoupon = null;
+    _discountAmount = 0;
     notifyListeners();
   }
 
@@ -92,5 +104,25 @@ class CartProvider with ChangeNotifier {
   // Lấy số lượng của một sản phẩm
   int getItemQuantity(String productId) {
     return _items[productId]?.quantity ?? 0;
+  }
+
+  void applyCoupon(CouponModel coupon) {
+    _selectedCoupon = coupon;
+    _recalculateDiscount();
+    notifyListeners();
+  }
+
+  void removeCoupon() {
+    _selectedCoupon = null;
+    _discountAmount = 0;
+    notifyListeners();
+  }
+
+  void _recalculateDiscount() {
+    if (_selectedCoupon == null) {
+      _discountAmount = 0;
+      return;
+    }
+    _discountAmount = _selectedCoupon!.calculateDiscount(totalAmount);
   }
 }

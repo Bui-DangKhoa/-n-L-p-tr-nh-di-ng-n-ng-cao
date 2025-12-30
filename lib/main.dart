@@ -4,6 +4,11 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart'; // ✅ Thêm import firebase options
 import 'providers/auth_provider.dart'; // ✅ Chuyển lại về auth provider chính
 import 'providers/cart_provider.dart';
+import 'providers/wishlist_provider.dart'; // 🆕 Wishlist provider
+import 'providers/notification_provider.dart'; // 🆕 Notification provider
+import 'providers/address_provider.dart'; // 🆕 Address provider
+import 'providers/banner_provider.dart';
+import 'providers/brand_provider.dart';
 import 'screens/auth/login_screen.dart'; // ✅ Thêm import
 import 'screens/auth/register_screen.dart'; // ✅ Thêm import
 import 'screens/home/home_screen.dart'; // ✅ Thêm import
@@ -19,6 +24,13 @@ import 'screens/debug/quick_admin_fix.dart'; // ✅ Thêm import quick admin fix
 import 'screens/debug/seed_data_screen.dart'; // ✅ Thêm import seed data screen
 import 'screens/admin/product_management_screen.dart'; // ✅ Thêm import admin screens
 import 'screens/admin/add_edit_product_screen.dart'; // ✅ Thêm import add/edit product screen
+import 'screens/admin/coupon_management_screen.dart';
+import 'screens/admin/brand_management_screen.dart';
+import 'screens/admin/banner_management_screen.dart';
+import 'screens/wishlist/wishlist_screen.dart'; // 🆕 Thêm import wishlist screen
+import 'screens/category/category_management_screen.dart'; // 🆕 Thêm import category management screen
+import 'screens/address/address_screen.dart'; // 🆕 Thêm import address screen
+import 'screens/notification/notification_screen.dart'; // 🆕 Thêm import notification screen
 // import 'services/firestore_service.dart'; // ❌ Tạm thời tắt
 
 void main() async {
@@ -32,6 +44,15 @@ void main() async {
           create: (_) => AuthProvider(),
         ), // ✅ Chuyển lại về auth provider chính
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(
+          create: (_) => WishlistProvider(),
+        ), // 🆕 Wishlist
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(),
+        ), // 🆕 Notification
+        ChangeNotifierProvider(create: (_) => AddressProvider()), // 🆕 Address
+        ChangeNotifierProvider(create: (_) => BannerProvider()),
+        ChangeNotifierProvider(create: (_) => BrandProvider()),
       ],
       child: const MyApp(),
     ),
@@ -84,6 +105,17 @@ class MyApp extends StatelessWidget {
             const ProductManagementScreen(), // ✅ Thêm admin product management route
         '/admin/add-product': (context) =>
             const AddEditProductScreen(), // ✅ Thêm add product route
+        '/admin/coupons': (context) => const CouponManagementScreen(),
+        '/admin/brands': (context) => const BrandManagementScreen(),
+        '/admin/banners': (context) => const BannerManagementScreen(),
+        '/wishlist': (context) =>
+            const WishlistScreen(), // 🆕 Thêm wishlist route
+        '/category-management': (context) =>
+            const CategoryManagementScreen(), // 🆕 Thêm category management route
+        '/addresses': (context) =>
+            const AddressScreen(), // 🆕 Thêm addresses route
+        '/notifications': (context) =>
+            const NotificationScreen(), // 🆕 Thêm notifications route
       },
     );
   }

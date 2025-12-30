@@ -1,20 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'cart_item_model.dart';
 
 class OrderModel {
   final String id;
-  final String userId;
+  final DocumentReference userRef; // ✅ Liên kết thực sự với users collection
   final String userName;
   final String userPhone;
   final String deliveryAddress;
   final List<CartItemModel> items;
   final double totalAmount;
-  final String status; // 'pending', 'confirmed', 'shipping', 'delivered', 'cancelled'
+  final String
+  status; // 'pending', 'confirmed', 'shipping', 'delivered', 'cancelled'
   final DateTime createdAt;
   final DateTime? updatedAt;
 
   OrderModel({
     required this.id,
-    required this.userId,
+    required this.userRef,
     required this.userName,
     required this.userPhone,
     required this.deliveryAddress,
@@ -25,11 +27,14 @@ class OrderModel {
     this.updatedAt,
   });
 
+  // ✅ Helper: Lấy userId từ reference
+  String get userId => userRef.id;
+
   /// Chuyển OrderModel thành Map (dùng lưu Firestore)
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'userId': userId,
+      'userRef': userRef, // ✅ Lưu DocumentReference
       'userName': userName,
       'userPhone': userPhone,
       'deliveryAddress': deliveryAddress,
@@ -45,20 +50,22 @@ class OrderModel {
   factory OrderModel.fromMap(Map<String, dynamic> map) {
     return OrderModel(
       id: map['id'] ?? '',
-      userId: map['userId'] ?? '',
+      userRef: map['userRef'] as DocumentReference, // ✅ Đọc DocumentReference
       userName: map['userName'] ?? '',
       userPhone: map['userPhone'] ?? '',
       deliveryAddress: map['deliveryAddress'] ?? '',
       items: map['items'] != null
           ? List<CartItemModel>.from(
-          map['items'].map((x) => CartItemModel.fromMap(x)))
+              map['items'].map((x) => CartItemModel.fromMap(x)),
+            )
           : [],
       totalAmount: map['totalAmount'] is int
           ? (map['totalAmount'] as int).toDouble()
           : (map['totalAmount'] ?? 0.0).toDouble(),
       status: map['status'] ?? 'pending',
       createdAt: DateTime.fromMillisecondsSinceEpoch(
-          map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch),
+        map['createdAt'] ?? DateTime.now().millisecondsSinceEpoch,
+      ),
       updatedAt: map['updatedAt'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['updatedAt'])
           : null,
@@ -66,13 +73,10 @@ class OrderModel {
   }
 
   /// Cập nhật trạng thái order và trả về bản mới
-  OrderModel copyWith({
-    String? status,
-    DateTime? updatedAt,
-  }) {
+  OrderModel copyWith({String? status, DateTime? updatedAt}) {
     return OrderModel(
       id: id,
-      userId: userId,
+      userRef: userRef, // ✅ Giữ nguyên reference
       userName: userName,
       userPhone: userPhone,
       deliveryAddress: deliveryAddress,

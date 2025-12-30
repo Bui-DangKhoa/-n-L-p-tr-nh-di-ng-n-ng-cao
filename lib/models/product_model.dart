@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ProductModel {
   String id;
   final String name;
@@ -38,21 +40,47 @@ class ProductModel {
 
   /// Tạo ProductModel từ Map Firestore
   factory ProductModel.fromMap(Map<String, dynamic> map) {
+    double _parsePrice(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    List<String> _parseImageUrls(dynamic value) {
+      if (value is List) {
+        return value.map((e) => e.toString()).toList();
+      }
+      if (value is String && value.isNotEmpty) {
+        return [value];
+      }
+      return [];
+    }
+
+    DateTime _parseDate(dynamic value) {
+      if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      if (value is String) {
+        final millis = int.tryParse(value);
+        if (millis != null) {
+          return DateTime.fromMillisecondsSinceEpoch(millis);
+        }
+      }
+      if (value is Timestamp) {
+        return value.toDate();
+      }
+      return DateTime.now();
+    }
+
     return ProductModel(
-      id: map['id'] ?? '',
-      name: map['name'] ?? '',
-      description: map['description'] ?? '',
-      price: map['price'] is int
-          ? (map['price'] as int).toDouble()
-          : (map['price'] ?? 0.0).toDouble(),
-      category: map['category'] ?? '',
-      imageUrls: map['imageUrls'] != null
-          ? List<String>.from(map['imageUrls'])
-          : [],
-      stock: map['stock'] ?? 0,
-      createdAt: map['createdAt'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['createdAt'])
-          : DateTime.now(),
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      price: _parsePrice(map['price']),
+      category: map['category']?.toString() ?? '',
+      imageUrls: _parseImageUrls(map['imageUrls'] ?? map['imageUrl']),
+      stock: (map['stock'] is num) ? (map['stock'] as num).toInt() : 0,
+      createdAt: _parseDate(map['createdAt']),
       isActive: map['isActive'] ?? true,
     );
   }
