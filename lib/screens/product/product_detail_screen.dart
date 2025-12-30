@@ -309,7 +309,7 @@ class ProductDetailScreen extends StatelessWidget {
                     quantity: 1,
                   );
 
-                  await cartProvider.addItem(cartItem);
+                  cartProvider.addItem(cartItem);
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

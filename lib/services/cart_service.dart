@@ -48,9 +48,10 @@ class CartService {
 
       if (!snapshot.exists) {
         // Tạo giỏ hàng mới
+        final userRef = _firestore.collection('users').doc(userId);
         final newCart = OrderModel(
           id: cartId,
-          userId: userId,
+          userRef: userRef, // ✅ Sử dụng DocumentReference
           userName: '', // Sẽ được cập nhật khi checkout
           userPhone: '',
           deliveryAddress: '',
@@ -277,9 +278,10 @@ class CartService {
 
     // Tạo order mới với ID mới
     final orderId = _firestore.collection('orders').doc().id;
+    final userRef = _firestore.collection('users').doc(userId);
     final order = OrderModel(
       id: orderId,
-      userId: userId,
+      userRef: userRef, // ✅ Sử dụng DocumentReference
       userName: userName,
       userPhone: userPhone,
       deliveryAddress: deliveryAddress,

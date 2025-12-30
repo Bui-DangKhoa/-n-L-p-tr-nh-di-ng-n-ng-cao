@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 import '../../models/cart_item_model.dart';
@@ -10,16 +11,13 @@ import '../../providers/auth_provider.dart';
 
 class CategoryProductsScreen extends StatelessWidget {
   final CategoryModel category;
-  
-  const CategoryProductsScreen({
-    super.key,
-    required this.category,
-  });
+
+  const CategoryProductsScreen({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
     final productService = ProductService();
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(category.name),
@@ -141,7 +139,10 @@ class CategoryProductsScreen extends StatelessWidget {
 
   Widget _buildProductCard(BuildContext context, ProductModel product) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      context,
+      listen: false,
+    );
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.user?.id ?? '';
 
@@ -152,7 +153,9 @@ class CategoryProductsScreen extends StatelessWidget {
 
         return Card(
           elevation: 3,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: InkWell(
             onTap: () {
               Navigator.pushNamed(
@@ -185,18 +188,24 @@ class CategoryProductsScreen extends StatelessWidget {
                             ? Image.network(
                                 product.imageUrls[0],
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      value: loadingProgress.expectedTotalBytes != null
-                                          ? loadingProgress.cumulativeBytesLoaded /
-                                              loadingProgress.expectedTotalBytes!
-                                          : null,
-                                    ),
-                                  );
-                                },
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          value:
+                                              loadingProgress
+                                                      .expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                        .cumulativeBytesLoaded /
+                                                    loadingProgress
+                                                        .expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      );
+                                    },
                                 errorBuilder: (context, error, stackTrace) {
                                   return Center(
                                     child: Icon(
@@ -225,17 +234,25 @@ class CategoryProductsScreen extends StatelessWidget {
                           if (userId.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Vui lòng đăng nhập để thêm vào yêu thích'),
+                                content: Text(
+                                  'Vui lòng đăng nhập để thêm vào yêu thích',
+                                ),
                                 backgroundColor: Colors.orange,
                               ),
                             );
                             return;
                           }
-                          
+
                           if (isInWishlist) {
-                            await wishlistProvider.removeFromWishlist(userId, product.id);
+                            await wishlistProvider.removeFromWishlist(
+                              userId,
+                              product.id,
+                            );
                           } else {
-                            await wishlistProvider.addToWishlist(userId, product.id);
+                            await wishlistProvider.addToWishlist(
+                              userId,
+                              product.id,
+                            );
                           }
                         },
                         child: Container(
@@ -251,7 +268,9 @@ class CategoryProductsScreen extends StatelessWidget {
                             ],
                           ),
                           child: Icon(
-                            isInWishlist ? Icons.favorite : Icons.favorite_border,
+                            isInWishlist
+                                ? Icons.favorite
+                                : Icons.favorite_border,
                             color: isInWishlist ? Colors.red : Colors.grey,
                             size: 20,
                           ),
@@ -269,11 +288,15 @@ class CategoryProductsScreen extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: product.stock > 0 ? Colors.orange : Colors.red,
+                            color: product.stock > 0
+                                ? Colors.orange
+                                : Colors.red,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            product.stock > 0 ? 'Còn ${product.stock}' : 'Hết hàng',
+                            product.stock > 0
+                                ? 'Còn ${product.stock}'
+                                : 'Hết hàng',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -317,9 +340,13 @@ class CategoryProductsScreen extends StatelessWidget {
                           height: 32,
                           child: ElevatedButton(
                             onPressed: product.stock > 0
-                                ? () async {
+                                ? () {
+                                    final firestore =
+                                        FirebaseFirestore.instance;
                                     final cartItem = CartItemModel(
-                                      productId: product.id,
+                                      productRef: firestore
+                                          .collection('products')
+                                          .doc(product.id),
                                       productName: product.name,
                                       price: product.price,
                                       imageUrl: product.imageUrls.isNotEmpty
@@ -328,10 +355,12 @@ class CategoryProductsScreen extends StatelessWidget {
                                       quantity: 1,
                                     );
 
-                                    await cartProvider.addItem(cartItem);
+                                    cartProvider.addItem(cartItem);
 
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             'Đã thêm ${product.name} vào giỏ hàng',
@@ -342,7 +371,10 @@ class CategoryProductsScreen extends StatelessWidget {
                                             label: 'Xem',
                                             textColor: Colors.white,
                                             onPressed: () {
-                                              Navigator.pushNamed(context, '/cart');
+                                              Navigator.pushNamed(
+                                                context,
+                                                '/cart',
+                                              );
                                             },
                                           ),
                                         ),
@@ -377,9 +409,6 @@ class CategoryProductsScreen extends StatelessWidget {
   }
 
   String _formatPrice(double price) {
-    return '${price.toStringAsFixed(0).replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        )} ₫';
+    return '${price.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} ₫';
   }
 }

@@ -22,7 +22,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ProductService _productService = ProductService();
-  final CategoryService _categoryService = CategoryService(); // 🆕 Category service
+  final CategoryService _categoryService =
+      CategoryService(); // 🆕 Category service
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
   String? _loadedWishlistUserId;
@@ -268,12 +269,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const Text(
                         "Danh mục sản phẩm",
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       if (isAdmin)
                         TextButton.icon(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/category-management');
+                            Navigator.pushNamed(
+                              context,
+                              '/category-management',
+                            );
                           },
                           icon: const Icon(Icons.settings, size: 16),
                           label: const Text('Quản lý'),
@@ -315,9 +322,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.category_outlined, 
-                                  size: 40, 
-                                  color: Colors.grey[400]
+                                Icon(
+                                  Icons.category_outlined,
+                                  size: 40,
+                                  color: Colors.grey[400],
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
@@ -328,7 +336,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(height: 4),
                                   TextButton(
                                     onPressed: () {
-                                      Navigator.pushNamed(context, '/category-management');
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/category-management',
+                                      );
                                     },
                                     child: const Text('Thêm danh mục'),
                                   ),
@@ -346,7 +357,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           itemCount: categories.length,
                           itemBuilder: (context, index) {
                             final category = categories[index];
-                            return _buildDynamicCategoryCard(context, category, index);
+                            return _buildDynamicCategoryCard(
+                              context,
+                              category,
+                              index,
+                            );
                           },
                         ),
                       );
@@ -965,7 +980,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
 
                       // Thêm vào giỏ hàng
-                      await cartProvider.addItem(cartItem);
+                      cartProvider.addItem(cartItem);
 
                       // Hiển thị thông báo
                       ScaffoldMessenger.of(context).showSnackBar(

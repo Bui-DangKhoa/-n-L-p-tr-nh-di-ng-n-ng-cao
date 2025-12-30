@@ -295,7 +295,7 @@ class CategoryScreen extends StatelessWidget {
                       );
 
                       // Thêm vào giỏ hàng
-                      await cartProvider.addItem(cartItem);
+                      cartProvider.addItem(cartItem);
 
                       // Hiển thị thông báo
                       ScaffoldMessenger.of(context).showSnackBar(
